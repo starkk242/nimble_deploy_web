@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Server, Bell, User, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,8 +24,19 @@ export default function Navbar() {
   const [location] = useLocation();
   const { user, isAuthenticated } = useAuth();
 
-  const handleLogout = () => {
-    window.location.href = "/api/logout";
+  const handleLogout = async () => {
+    try {
+      const res = await fetch("/api/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (res.ok) {
+        localStorage.removeItem("token");
+        window.location.href = "/auth/login";
+      }
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
   };
 
   return (

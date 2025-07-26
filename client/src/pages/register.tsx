@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,12 +8,11 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
+  const [location, setLocation] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setSuccess(false);
     try {
       const res = await fetch("/api/register", {
         method: "POST",
@@ -24,7 +24,9 @@ export default function Register() {
         setError(data.error || "Registration failed");
         return;
       }
-      setSuccess(true);
+      const data = await res.json();
+      localStorage.setItem("token", data.token);
+      setLocation("/dashboard");
     } catch (err) {
       setError("Network error");
     }
@@ -51,11 +53,6 @@ export default function Register() {
               required
             />
             {error && <div className="text-red-600 text-sm">{error}</div>}
-            {success && (
-              <div className="text-green-600 text-sm">
-                Registration successful! You can now <a href="/login" className="underline">login</a>.
-              </div>
-            )}
             <Button type="submit" className="w-full">Register</Button>
           </form>
           <div className="mt-4 text-center">

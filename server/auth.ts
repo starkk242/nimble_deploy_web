@@ -90,7 +90,12 @@ export async function register(req: Request, res: Response) {
   }
   const hash = await bcrypt.hash(password, 10);
   const user = await createUser({ email, passwordHash: hash });
-  res.status(201).json({ message: "User registered", user: { email: user.email } });
+  const token = jwt.sign(
+    { sub: user.id, email: user.email },
+    process.env.JWT_SECRET || "dev_secret_change_me",
+    { expiresIn: "1h" }
+  );
+  res.status(201).json({ message: "User registered", token, user: { email: user.email } });
 }
 
 // Username/password login (unchanged)
