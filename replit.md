@@ -1,8 +1,8 @@
-# MCP Server Generator
+# Nimble Deploy
 
 ## Overview
 
-This is a full-stack web application that allows users to upload OpenAPI specifications and automatically generate MCP (Model Context Protocol) servers. The application provides a comprehensive platform for creating, managing, and deploying API servers with built-in authentication, rate limiting, and monitoring capabilities.
+Nimble Deploy is a full-stack web application that allows users to upload OpenAPI specifications and automatically generate MCP (Model Context Protocol) servers. The application provides a comprehensive platform for creating, managing, and deploying API servers with built-in authentication, rate limiting, and monitoring capabilities.
 
 ## User Preferences
 

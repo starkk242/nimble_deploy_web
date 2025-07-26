@@ -135,7 +135,7 @@ export default function Upload() {
   return (
     <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Generate MCP Server</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">Deploy Your API</h1>
         <p className="text-lg text-gray-600">Upload your OpenAPI specification to automatically generate and deploy your MCP server</p>
       </div>
 

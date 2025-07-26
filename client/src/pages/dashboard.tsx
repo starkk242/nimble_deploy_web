@@ -52,80 +52,80 @@ export default function Dashboard() {
       {/* Hero Section */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Transform OpenAPI to Live MCP Servers
+          Deploy APIs Instantly with Nimble Deploy
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
           Upload your Swagger/OpenAPI definitions and instantly generate production-ready MCP servers with auto-deployment, health checks, and monitoring included.
         </p>
         <Link href="/upload">
-          <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium inline-flex items-center">
-            <Upload className="mr-2" size={16} />
-            Start Generating
+          <button className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all font-semibold inline-flex items-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+            <Upload className="mr-2" size={18} />
+            Start Deploying
           </button>
         </Link>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-        <Card className="shadow-sm">
+        <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Servers</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm font-medium text-gray-600">Total APIs</p>
+                <p className="text-3xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
                   {statsLoading ? "..." : stats?.totalServers || 0}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Server className="text-blue-600" size={20} />
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <Server className="text-white" size={20} />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm">
+        <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Deployments</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-3xl font-bold text-green-600 group-hover:text-green-500 transition-colors">
                   {statsLoading ? "..." : stats?.activeServers || 0}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="text-green-600" size={20} />
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <CheckCircle className="text-white" size={20} />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm">
+        <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">API Calls Today</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-3xl font-bold text-gray-900 group-hover:text-amber-600 transition-colors">
                   {statsLoading ? "..." : stats?.totalRequests?.toLocaleString() || 0}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                <BarChart3 className="text-amber-600" size={20} />
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <BarChart3 className="text-white" size={20} />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm">
+        <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 group">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Uptime</p>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-3xl font-bold text-green-600 group-hover:text-green-500 transition-colors">
                   {statsLoading ? "..." : stats?.avgUptime || "0%"}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <HeartPulse className="text-green-600" size={20} />
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <HeartPulse className="text-white" size={20} />
               </div>
             </div>
           </CardContent>
@@ -133,7 +133,7 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Activity */}
-      <Card className="shadow-sm mb-8">
+      <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm mb-8">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
         </div>
@@ -160,7 +160,7 @@ export default function Dashboard() {
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">{event.message}</p>
                     <p className="text-xs text-gray-500">
-                      {new Date(event.createdAt).toRelativeTimeString()}
+                      {new Date(event.createdAt).toLocaleString()}
                     </p>
                   </div>
                   <span className={`px-2 py-1 text-xs font-medium rounded-full ${getEventBadgeClass(event.status)}`}>
@@ -181,13 +181,13 @@ export default function Dashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link href="/upload">
-          <Card className="shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+          <Card className="border-0 shadow-lg bg-white/70 backdrop-blur-sm hover:shadow-xl transition-all duration-300 cursor-pointer group transform hover:-translate-y-1">
             <CardContent className="p-6">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                <Plus className="text-blue-600" size={20} />
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform">
+                <Plus className="text-white" size={20} />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Generate New Server</h3>
-              <p className="text-gray-600">Upload your OpenAPI specification to create a new MCP server</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">Deploy New API</h3>
+              <p className="text-gray-600">Upload your OpenAPI specification to instantly deploy your API</p>
             </CardContent>
           </Card>
         </Link>
@@ -198,8 +198,8 @@ export default function Dashboard() {
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
                 <List className="text-green-600" size={20} />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Manage Servers</h3>
-              <p className="text-gray-600">View and manage your deployed MCP servers and their status</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Manage APIs</h3>
+              <p className="text-gray-600">View and manage your deployed APIs and their status</p>
             </CardContent>
           </Card>
         </Link>
@@ -211,7 +211,7 @@ export default function Dashboard() {
                 <Book className="text-purple-600" size={20} />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Documentation</h3>
-              <p className="text-gray-600">Learn how to integrate and use your MCP servers</p>
+              <p className="text-gray-600">Learn how to integrate and use your deployed APIs</p>
             </CardContent>
           </Card>
         </Link>

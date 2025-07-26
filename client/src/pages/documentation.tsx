@@ -17,7 +17,7 @@ export default function Documentation() {
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="text-center mb-12">
         <h1 className="text-3xl font-bold text-gray-900 mb-4">Documentation</h1>
-        <p className="text-lg text-gray-600">Learn how to integrate and use your MCP servers</p>
+        <p className="text-lg text-gray-600">Learn how to integrate and use your deployed APIs</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -55,7 +55,7 @@ export default function Documentation() {
                 <div className="prose max-w-none">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Overview</h3>
                   <p className="text-gray-600 mb-6">
-                    The MCP Server Generator automatically converts your OpenAPI specifications into fully functional MCP (Model Context Protocol) servers. These servers are deployed instantly and include built-in authentication, health checks, and monitoring.
+                    Nimble Deploy automatically converts your OpenAPI specifications into fully functional MCP (Model Context Protocol) servers. These servers are deployed instantly and include built-in authentication, health checks, and monitoring.
                   </p>
 
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Start</h3>

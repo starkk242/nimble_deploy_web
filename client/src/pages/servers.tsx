@@ -111,7 +111,7 @@ export default function Servers() {
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My MCP Servers</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Deployed APIs</h1>
           <p className="text-lg text-gray-600">Manage and monitor your deployed MCP servers</p>
         </div>
         <Link href="/upload">
@@ -174,7 +174,7 @@ export default function Servers() {
             <h3 className="text-lg font-medium text-gray-900 mb-2">No servers found</h3>
             <p className="text-gray-600 mb-6">
               {servers.length === 0 
-                ? "Get started by creating your first MCP server" 
+                ? "Get started by deploying your first API" 
                 : "Try adjusting your filters or search terms"
               }
             </p>
@@ -182,7 +182,7 @@ export default function Servers() {
               <Link href="/upload">
                 <Button className="bg-blue-600 hover:bg-blue-700">
                   <Plus className="mr-2" size={16} />
-                  Create Your First Server
+                  Deploy Your First API
                 </Button>
               </Link>
             )}
