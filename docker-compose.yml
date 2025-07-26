@@ -14,11 +14,14 @@ services:
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - app-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U nimble_user -d nimble_deploy"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 40s
 
   # Nimble Deploy Application
   app:
@@ -26,8 +29,8 @@ services:
     restart: unless-stopped
     environment:
       # Database Configuration
-      DATABASE_URL: postgresql://nimble_user:${POSTGRES_PASSWORD:-nimble_secure_password}@db:5432/nimble_deploy
-      PGHOST: db
+      DATABASE_URL: postgresql://nimble_user:${POSTGRES_PASSWORD:-nimble_secure_password}@localhost:5432/nimble_deploy
+      PGHOST: localhost
       PGPORT: 5432
       PGDATABASE: nimble_deploy
       PGUSER: nimble_user
@@ -43,18 +46,21 @@ services:
       REPLIT_DOMAINS: ${REPLIT_DOMAINS}
       ISSUER_URL: ${ISSUER_URL:-https://replit.com/oidc}
     ports:
-      - "${APP_PORT:-3000}:5000"
+      - "3000:5000"
     depends_on:
       db:
         condition: service_healthy
     volumes:
       # Mount uploads directory for file persistence
       - uploads_data:/app/uploads
+    networks:
+      - app-network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/api/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s
 
   # Optional: Redis for session storage (alternative to PostgreSQL sessions)
   redis:
@@ -64,6 +70,8 @@ services:
       - redis_data:/data
     ports:
       - "${REDIS_PORT:-6379}:6379"
+    networks:
+      - app-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
@@ -84,6 +92,8 @@ services:
       - ./ssl:/etc/nginx/ssl:ro
     depends_on:
       - app
+    networks:
+      - app-network
     profiles:
       - nginx
 
@@ -91,3 +101,7 @@ volumes:
   postgres_data:
   redis_data:
   uploads_data:
+
+networks:
+  app-network:
+    driver: bridge

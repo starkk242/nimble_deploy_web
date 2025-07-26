@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Plus, List, Book, Server, CheckCircle, BarChart3, HeartPulse, Upload, TriangleAlert } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
+import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DashboardStats {
   totalServers: number;

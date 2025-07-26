@@ -68,6 +68,22 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(mcpServers).orderBy(desc(mcpServers.createdAt));
   }
 
+  async getUserByEmail(email: string) {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || null;
+  }
+  
+  async createUser(userData: { email: string; passwordHash?: string | null; auth0Id?: string }) {
+    const [user] = await db
+      .insert(users)
+      .values({
+        email: userData.email,
+        auth0Id: userData.auth0Id || null,
+      })
+      .returning();
+    return user;
+  }
+
   async getMcpServer(id: string, userId?: string): Promise<McpServer | undefined> {
     if (userId) {
       const [server] = await db.select().from(mcpServers).where(
@@ -107,7 +123,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(mcpServers)
       .where(and(eq(mcpServers.id, id), eq(mcpServers.userId, userId)));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   // Deployment Event operations

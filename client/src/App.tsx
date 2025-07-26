@@ -12,6 +12,8 @@ import Servers from "@/pages/servers";
 import Documentation from "@/pages/documentation";
 import Landing from "@/pages/landing";
 import Navbar from "@/components/layout/navbar";
+import Login from "./pages/login";
+import Register from "./pages/register";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -22,6 +24,8 @@ function Router() {
     return (
       <Switch>
         <Route path="/" component={Landing} />
+        <Route path="/auth/login" component={Login} />
+        <Route path="/auth/register" component={Register} />
         <Route component={Landing} />
       </Switch>
     );
@@ -33,6 +37,7 @@ function Router() {
       <Navbar />
       <Switch>
         <Route path="/" component={Dashboard} />
+        <Route path="/dashboard" component={Dashboard} />
         <Route path="/upload" component={Upload} />
         <Route path="/servers" component={Servers} />
         <Route path="/docs" component={Documentation} />
