@@ -2,11 +2,21 @@
 
 ## Overview
 
-Nimble Deploy is a full-stack web application that allows users to upload OpenAPI specifications and automatically generate MCP (Model Context Protocol) servers. The application provides a comprehensive platform for creating, managing, and deploying API servers with built-in authentication, rate limiting, and monitoring capabilities.
+Nimble Deploy is a modern, minimalistic platform that converts Swagger/OpenAPI definitions into auto-deployed MCP servers. The application features OAuth-based authentication, user-specific server management, and a complete landing page for non-authenticated users with enterprise-grade security and monitoring capabilities.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Recent Changes (January 2025)
+
+- **OAuth Authentication Implementation**: Integrated Replit OAuth for secure user authentication
+- **Landing Page**: Created modern landing page with glassmorphism design for non-authenticated users
+- **User-Specific Data**: All MCP servers are now user-scoped with proper access controls
+- **Database Migration**: Switched from in-memory storage to PostgreSQL with Drizzle ORM
+- **Rebranding**: Updated application name to "Nimble Deploy" with modern UI styling
+- **Secure Routes**: All API endpoints now require authentication except public landing page
+- **User Interface**: Added user dropdown with profile info and logout functionality
 
 ## System Architecture
 
@@ -24,14 +34,17 @@ Preferred communication style: Simple, everyday language.
 - **Language**: TypeScript with ESM modules
 - **Database**: PostgreSQL with Drizzle ORM
 - **Database Provider**: Neon Database (serverless PostgreSQL)
-- **API Style**: RESTful APIs with structured error handling
+- **Authentication**: Replit OAuth with OpenID Connect
+- **Session Management**: PostgreSQL-backed sessions with connect-pg-simple
+- **API Style**: RESTful APIs with structured error handling and authentication middleware
 - **File Upload**: Multer for handling OpenAPI spec uploads
 
 ### Key Components
 
 #### Database Schema
-- **Users**: Basic user management with username/password authentication
-- **MCP Servers**: Core entity storing server configurations, OpenAPI specs, and deployment status
+- **Users**: OAuth user management with Replit integration (email, profile info)
+- **Sessions**: Secure session storage for authentication state
+- **MCP Servers**: User-scoped server entities with OpenAPI specs and deployment status
 - **Deployment Events**: Audit trail for all server lifecycle events
 
 #### Service Layer
@@ -40,10 +53,12 @@ Preferred communication style: Simple, everyday language.
 - **Deployment Service**: Simulates server deployment with status tracking
 
 #### Frontend Pages
-- **Dashboard**: Overview of server statistics and recent activities
+- **Landing Page**: Modern glassmorphism design for non-authenticated users with features showcase
+- **Dashboard**: User-specific overview of server statistics and recent activities
 - **Upload**: File upload and server configuration interface
-- **Servers**: Management interface for existing MCP servers
+- **Servers**: Management interface for user's MCP servers
 - **Documentation**: Comprehensive API and integration documentation
+- **Authentication**: OAuth login/logout flow with user profile management
 
 ### Data Flow
 

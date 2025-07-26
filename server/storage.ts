@@ -1,118 +1,171 @@
-import { type User, type InsertUser, type McpServer, type InsertMcpServer, type DeploymentEvent, type InsertDeploymentEvent } from "@shared/schema";
-import { randomUUID } from "crypto";
+import {
+  users,
+  mcpServers,
+  deploymentEvents,
+  type UpsertUser,
+  type User,
+  type McpServer,
+  type InsertMcpServer,
+  type DeploymentEvent,
+  type InsertDeploymentEvent,
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, count, avg, and } from "drizzle-orm";
 
 export interface IStorage {
+  // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  upsertUser(user: UpsertUser): Promise<User>;
   
-  getMcpServer(id: string): Promise<McpServer | undefined>;
-  getMcpServers(): Promise<McpServer[]>;
-  createMcpServer(server: InsertMcpServer): Promise<McpServer>;
-  updateMcpServer(id: string, updates: Partial<McpServer>): Promise<McpServer | undefined>;
-  deleteMcpServer(id: string): Promise<boolean>;
+  // MCP Server operations
+  getMcpServers(userId?: string): Promise<McpServer[]>;
+  getMcpServer(id: string, userId?: string): Promise<McpServer | undefined>;
+  createMcpServer(server: InsertMcpServer, userId: string): Promise<McpServer>;
+  updateMcpServer(id: string, updates: Partial<McpServer>, userId: string): Promise<McpServer | undefined>;
+  deleteMcpServer(id: string, userId: string): Promise<boolean>;
   
-  getDeploymentEvents(serverId: string): Promise<DeploymentEvent[]>;
+  // Deployment Event operations
+  getDeploymentEvents(serverId?: string): Promise<DeploymentEvent[]>;
   createDeploymentEvent(event: InsertDeploymentEvent): Promise<DeploymentEvent>;
   getRecentDeploymentEvents(limit?: number): Promise<DeploymentEvent[]>;
+  
+  // Stats operations
+  getStats(userId?: string): Promise<{
+    totalServers: number;
+    activeServers: number;
+    totalRequests: number;
+    avgUptime: string;
+  }>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-  private mcpServers: Map<string, McpServer>;
-  private deploymentEvents: Map<string, DeploymentEvent>;
-
-  constructor() {
-    this.users = new Map();
-    this.mcpServers = new Map();
-    this.deploymentEvents = new Map();
-  }
-
+export class DatabaseStorage implements IStorage {
+  // User operations (required for Replit Auth)
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
 
-  async getMcpServer(id: string): Promise<McpServer | undefined> {
-    return this.mcpServers.get(id);
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
   }
 
-  async getMcpServers(): Promise<McpServer[]> {
-    return Array.from(this.mcpServers.values()).sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+  // MCP Server operations
+  async getMcpServers(userId?: string): Promise<McpServer[]> {
+    if (userId) {
+      return await db.select().from(mcpServers).where(eq(mcpServers.userId, userId)).orderBy(desc(mcpServers.createdAt));
+    }
+    return await db.select().from(mcpServers).orderBy(desc(mcpServers.createdAt));
   }
 
-  async createMcpServer(insertServer: InsertMcpServer): Promise<McpServer> {
-    const id = randomUUID();
-    const now = new Date();
-    const server: McpServer = {
-      ...insertServer,
-      id,
-      endpoint: null,
-      generatedCode: null,
-      deploymentLogs: null,
-      requestCount: 0,
-      uptime: "0%",
-      lastHealthCheck: null,
-      createdAt: now,
-      updatedAt: now,
-    };
-    this.mcpServers.set(id, server);
-    return server;
+  async getMcpServer(id: string, userId?: string): Promise<McpServer | undefined> {
+    if (userId) {
+      const [server] = await db.select().from(mcpServers).where(
+        and(eq(mcpServers.id, id), eq(mcpServers.userId, userId))
+      );
+      return server;
+    } else {
+      const [server] = await db.select().from(mcpServers).where(eq(mcpServers.id, id));
+      return server;
+    }
   }
 
-  async updateMcpServer(id: string, updates: Partial<McpServer>): Promise<McpServer | undefined> {
-    const server = this.mcpServers.get(id);
-    if (!server) return undefined;
-    
-    const updatedServer = {
-      ...server,
-      ...updates,
-      updatedAt: new Date(),
-    };
-    this.mcpServers.set(id, updatedServer);
+  async createMcpServer(server: InsertMcpServer, userId: string): Promise<McpServer> {
+    const [newServer] = await db
+      .insert(mcpServers)
+      .values({
+        ...server,
+        userId,
+      })
+      .returning();
+    return newServer;
+  }
+
+  async updateMcpServer(id: string, updates: Partial<McpServer>, userId: string): Promise<McpServer | undefined> {
+    const [updatedServer] = await db
+      .update(mcpServers)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(mcpServers.id, id), eq(mcpServers.userId, userId)))
+      .returning();
     return updatedServer;
   }
 
-  async deleteMcpServer(id: string): Promise<boolean> {
-    return this.mcpServers.delete(id);
+  async deleteMcpServer(id: string, userId: string): Promise<boolean> {
+    const result = await db
+      .delete(mcpServers)
+      .where(and(eq(mcpServers.id, id), eq(mcpServers.userId, userId)));
+    return result.rowCount > 0;
   }
 
-  async getDeploymentEvents(serverId: string): Promise<DeploymentEvent[]> {
-    return Array.from(this.deploymentEvents.values())
-      .filter(event => event.serverId === serverId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  // Deployment Event operations
+  async getDeploymentEvents(serverId?: string): Promise<DeploymentEvent[]> {
+    if (serverId) {
+      return await db.select().from(deploymentEvents).where(eq(deploymentEvents.serverId, serverId)).orderBy(desc(deploymentEvents.createdAt));
+    }
+    return await db.select().from(deploymentEvents).orderBy(desc(deploymentEvents.createdAt));
   }
 
-  async createDeploymentEvent(insertEvent: InsertDeploymentEvent): Promise<DeploymentEvent> {
-    const id = randomUUID();
-    const event: DeploymentEvent = {
-      ...insertEvent,
-      id,
-      createdAt: new Date(),
-    };
-    this.deploymentEvents.set(id, event);
-    return event;
+  async createDeploymentEvent(event: InsertDeploymentEvent): Promise<DeploymentEvent> {
+    const [newEvent] = await db
+      .insert(deploymentEvents)
+      .values(event)
+      .returning();
+    return newEvent;
   }
 
   async getRecentDeploymentEvents(limit = 10): Promise<DeploymentEvent[]> {
-    return Array.from(this.deploymentEvents.values())
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, limit);
+    return await db.select().from(deploymentEvents).orderBy(desc(deploymentEvents.createdAt)).limit(limit);
+  }
+
+  // Stats operations
+  async getStats(userId?: string): Promise<{
+    totalServers: number;
+    activeServers: number;
+    totalRequests: number;
+    avgUptime: string;
+  }> {
+    const conditions = userId ? [eq(mcpServers.userId, userId)] : [];
+    
+    const totalServersResult = await db.select({ count: count() }).from(mcpServers).where(
+      conditions.length > 0 ? conditions[0] : undefined
+    );
+    
+    const activeServersResult = await db.select({ count: count() }).from(mcpServers).where(
+      conditions.length > 0 ? 
+        and(eq(mcpServers.userId, userId!), eq(mcpServers.status, 'active')) :
+        eq(mcpServers.status, 'active')
+    );
+
+    const servers = await this.getMcpServers(userId);
+    const totalRequests = servers.reduce((sum, server) => sum + server.requestCount, 0);
+    
+    // Calculate average uptime (simplified)
+    const avgUptime = servers.length > 0 ? 
+      Math.round(servers.reduce((sum, server) => {
+        const uptime = parseFloat(server.uptime.replace('%', ''));
+        return sum + uptime;
+      }, 0) / servers.length) + '%' : '0%';
+
+    return {
+      totalServers: totalServersResult[0]?.count || 0,
+      activeServers: activeServersResult[0]?.count || 0,
+      totalRequests,
+      avgUptime,
+    };
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

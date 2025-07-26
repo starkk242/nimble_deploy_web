@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertMcpServerSchema, insertDeploymentEventSchema } from "@shared/schema";
 import { OpenApiParser } from "./services/openapi-parser";
 import { McpGenerator } from "./services/mcp-generator";
@@ -26,20 +27,37 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Get all MCP servers
-  app.get("/api/servers", async (req, res) => {
+  // Auth middleware
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const servers = await storage.getMcpServers();
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Get all MCP servers (authenticated)
+  app.get("/api/servers", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const servers = await storage.getMcpServers(userId);
       res.json(servers);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch servers" });
     }
   });
 
-  // Get specific MCP server
-  app.get("/api/servers/:id", async (req, res) => {
+  // Get specific MCP server (authenticated)
+  app.get("/api/servers/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const server = await storage.getMcpServer(req.params.id);
+      const userId = req.user.claims.sub;
+      const server = await storage.getMcpServer(req.params.id, userId);
       if (!server) {
         return res.status(404).json({ error: "Server not found" });
       }
@@ -49,8 +67,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Upload and validate OpenAPI spec
-  app.post("/api/validate-openapi", upload.single('file'), async (req, res) => {
+  // Upload and validate OpenAPI spec (authenticated)
+  app.post("/api/validate-openapi", isAuthenticated, upload.single('file'), async (req, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ error: "No file uploaded" });
@@ -81,9 +99,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create and deploy MCP server
-  app.post("/api/servers", async (req, res) => {
+  // Create and deploy MCP server (authenticated)
+  app.post("/api/servers", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const validation = insertMcpServerSchema.safeParse(req.body);
       if (!validation.success) {
         return res.status(400).json({ 
@@ -104,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create server record
-      const server = await storage.createMcpServer(serverData);
+      const server = await storage.createMcpServer(serverData, userId);
 
       // Log upload event
       await storage.createDeploymentEvent({
@@ -137,7 +156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.updateMcpServer(server.id, {
         generatedCode: generationResult.code,
         status: "deploying"
-      });
+      }, userId);
 
       await storage.createDeploymentEvent({
         serverId: server.id,
@@ -158,11 +177,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update MCP server
-  app.patch("/api/servers/:id", async (req, res) => {
+  // Update MCP server (authenticated)
+  app.patch("/api/servers/:id", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const updates = req.body;
-      const server = await storage.updateMcpServer(req.params.id, updates);
+      const server = await storage.updateMcpServer(req.params.id, updates, userId);
       
       if (!server) {
         return res.status(404).json({ error: "Server not found" });
@@ -174,10 +194,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete MCP server
-  app.delete("/api/servers/:id", async (req, res) => {
+  // Delete MCP server (authenticated)
+  app.delete("/api/servers/:id", isAuthenticated, async (req: any, res) => {
     try {
-      const deleted = await storage.deleteMcpServer(req.params.id);
+      const userId = req.user.claims.sub;
+      const deleted = await storage.deleteMcpServer(req.params.id, userId);
       if (!deleted) {
         return res.status(404).json({ error: "Server not found" });
       }
@@ -196,8 +217,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get deployment events for a server
-  app.get("/api/servers/:id/events", async (req, res) => {
+  // Get deployment events for a server (authenticated)
+  app.get("/api/servers/:id/events", isAuthenticated, async (req, res) => {
     try {
       const events = await storage.getDeploymentEvents(req.params.id);
       res.json(events);
@@ -206,8 +227,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get recent deployment events (for dashboard)
-  app.get("/api/events", async (req, res) => {
+  // Get recent deployment events (for dashboard) (authenticated)
+  app.get("/api/events", isAuthenticated, async (req, res) => {
     try {
       const limit = parseInt(req.query.limit as string) || 10;
       const events = await storage.getRecentDeploymentEvents(limit);
@@ -217,22 +238,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get dashboard stats
-  app.get("/api/stats", async (req, res) => {
+  // Get dashboard stats (authenticated)
+  app.get("/api/stats", isAuthenticated, async (req: any, res) => {
     try {
-      const servers = await storage.getMcpServers();
-      const activeServers = servers.filter(s => s.status === "active");
-      const totalRequests = servers.reduce((sum, server) => sum + server.requestCount, 0);
-      
-      const stats = {
-        totalServers: servers.length,
-        activeServers: activeServers.length,
-        totalRequests,
-        avgUptime: activeServers.length > 0 
-          ? (activeServers.reduce((sum, s) => sum + parseFloat(s.uptime.replace('%', '')), 0) / activeServers.length).toFixed(1) + '%'
-          : '0%'
-      };
-
+      const userId = req.user.claims.sub;
+      const stats = await storage.getStats(userId);
       res.json(stats);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch stats" });
