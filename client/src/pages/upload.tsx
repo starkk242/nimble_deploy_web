@@ -60,7 +60,7 @@ export default function Upload() {
       formData.append('file', file);
       
       const response = await apiRequest('POST', '/api/validate-openapi', formData);
-      return response.json();
+      return await response.json();
     },
     onSuccess: (result: ValidationResult) => {
       setValidationResult(result);
