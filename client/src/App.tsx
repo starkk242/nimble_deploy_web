@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import Upload from "@/pages/upload";
@@ -14,6 +15,7 @@ import Navbar from "@/components/layout/navbar";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+  const { theme } = useTheme(); // Initialize theme
 
   // Show landing page for non-authenticated users or during loading
   if (isLoading || !isAuthenticated) {
@@ -27,7 +29,7 @@ function Router() {
 
   // Show authenticated app
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-blue-900">
       <Navbar />
       <Switch>
         <Route path="/" component={Dashboard} />

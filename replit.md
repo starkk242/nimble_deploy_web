@@ -19,6 +19,7 @@ Preferred communication style: Simple, everyday language.
 - **User Interface**: Added user dropdown with profile info and logout functionality
 - **Docker Deployment**: Complete containerization with Docker and Docker Compose setup
 - **Production Ready**: Nginx reverse proxy, health checks, and deployment automation
+- **Dark/Light Mode**: Comprehensive theming system with dark mode as default and toggle functionality
 
 ## System Architecture
 
@@ -61,6 +62,7 @@ Preferred communication style: Simple, everyday language.
 - **Servers**: Management interface for user's MCP servers
 - **Documentation**: Comprehensive API and integration documentation
 - **Authentication**: OAuth login/logout flow with user profile management
+- **Theme System**: Dark/light mode toggle with system preferences and localStorage persistence
 
 ### Data Flow
 
