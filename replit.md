@@ -17,6 +17,8 @@ Preferred communication style: Simple, everyday language.
 - **Rebranding**: Updated application name to "Nimble Deploy" with modern UI styling
 - **Secure Routes**: All API endpoints now require authentication except public landing page
 - **User Interface**: Added user dropdown with profile info and logout functionality
+- **Docker Deployment**: Complete containerization with Docker and Docker Compose setup
+- **Production Ready**: Nginx reverse proxy, health checks, and deployment automation
 
 ## System Architecture
 
@@ -92,6 +94,10 @@ Preferred communication style: Simple, everyday language.
 - **Server**: Compiled to ESM bundle via esbuild
 - **Database**: Production PostgreSQL with connection pooling
 - **Session Storage**: PostgreSQL-backed sessions via connect-pg-simple
+- **Containerization**: Docker with multi-stage builds for optimized images
+- **Orchestration**: Docker Compose with health checks and service dependencies
+- **Reverse Proxy**: Nginx with rate limiting, caching, and security headers
+- **Deployment**: Automated deployment scripts with multiple configuration profiles
 
 #### Key Architectural Decisions
 
@@ -104,3 +110,26 @@ Preferred communication style: Simple, everyday language.
 7. **In-Memory Fallback**: Memory storage implementation for development/testing
 
 The application follows modern full-stack patterns with emphasis on type safety, developer experience, and scalable architecture. The use of established tools like Express, React, and PostgreSQL ensures maintainability while the TypeScript-first approach provides robust error checking and IDE support.
+
+## Docker Deployment
+
+The application includes comprehensive Docker deployment setup:
+
+### Quick Deployment Commands
+- `./deploy.sh basic` - Deploy with app and database
+- `./deploy.sh nginx` - Deploy with reverse proxy
+- `./deploy.sh full` - Deploy all services (app, database, Redis, Nginx)
+
+### Key Docker Features
+- **Multi-stage builds** for optimized production images
+- **Health checks** for all services with automatic restarts
+- **Volume persistence** for data and uploads
+- **Environment configuration** via .env files
+- **Service orchestration** with dependency management
+- **Security hardening** with non-root containers and proper networking
+
+### Production Ready Components
+- Nginx reverse proxy with rate limiting and SSL support
+- Redis for high-performance session storage
+- PostgreSQL with automated backups and initialization
+- Comprehensive logging and monitoring setup

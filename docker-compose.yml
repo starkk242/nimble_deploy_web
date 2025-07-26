@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nimble_deploy
+      POSTGRES_USER: nimble_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nimble_secure_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nimble_user -d nimble_deploy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nimble Deploy Application
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      # Database Configuration
+      DATABASE_URL: postgresql://nimble_user:${POSTGRES_PASSWORD:-nimble_secure_password}@db:5432/nimble_deploy
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: nimble_deploy
+      PGUSER: nimble_user
+      PGPASSWORD: ${POSTGRES_PASSWORD:-nimble_secure_password}
+      
+      # Application Configuration
+      NODE_ENV: production
+      PORT: 5000
+      
+      # Authentication Configuration (Required for OAuth)
+      SESSION_SECRET: ${SESSION_SECRET}
+      REPL_ID: ${REPL_ID}
+      REPLIT_DOMAINS: ${REPLIT_DOMAINS}
+      ISSUER_URL: ${ISSUER_URL:-https://replit.com/oidc}
+    ports:
+      - "${APP_PORT:-3000}:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Mount uploads directory for file persistence
+      - uploads_data:/app/uploads
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Redis for session storage (alternative to PostgreSQL sessions)
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles:
+      - redis
+
+  # Optional: Nginx reverse proxy for production
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_SSL_PORT:-443}:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    profiles:
+      - nginx
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:
