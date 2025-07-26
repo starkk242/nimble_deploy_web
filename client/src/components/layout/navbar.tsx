@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import type { User as UserType } from "@shared/schema";
 
 const navItems = [
   { path: "/", label: "Dashboard", page: "dashboard" },
